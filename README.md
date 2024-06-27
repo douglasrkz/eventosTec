@@ -1,0 +1,2 @@
+# eventosTec
+Criando BACKEND COMPLETO do ZERO com JAVA SPRING + POSTGRES + AWS. 
