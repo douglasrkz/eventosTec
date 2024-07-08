@@ -19,7 +19,6 @@ public class AWSConfig {
         return AmazonS3ClientBuilder
                 .standard()
                 .withCredentials(new DefaultAWSCredentialsProviderChain())
-//                .withCredentials(new EnvironmentVariableCredentialsProvider())
                 .withRegion(awsRegion)
                 .build();
     }
