@@ -30,6 +30,9 @@ public class EventService {
     private AmazonS3 s3Client;
 
     @Autowired
+    private AddressService addressService;
+
+    @Autowired
     private EventRepository repository;
 
     public Event createEvent(EventRequestDTO data) {
@@ -48,6 +51,10 @@ public class EventService {
         newEvent.setRemote(data.remote());
 
         repository.save(newEvent);
+
+        if(!data.remote()) {
+            this.addressService.createAddress(data, newEvent);
+        }
 
         return newEvent;
     }
@@ -76,14 +83,36 @@ public class EventService {
 
     public List<EventResponseDTO> getUpcomingEvents(int page, int size){
         Pageable pageable = PageRequest.of(page, size);
-        Page<Event> eventsPage = this.repository.findAll(pageable);
+        Page<Event> eventsPage = this.repository.findUpcomingEvents(new Date(), pageable);
         return eventsPage.map(event -> new EventResponseDTO(
                         event.getId(),
                         event.getTitle(),
                         event.getDescription(),
                         event.getDate(),
-                        "",
-                        "",
+                        event.getAddress() != null ? event.getAddress().getCity() : "",
+                        event.getAddress() != null ? event.getAddress().getUf() : "",
+                        event.getRemote(),
+                        event.getEventUrl(),
+                        event.getImgUrl())
+                )
+                .stream().toList();
+    }
+
+    public List<EventResponseDTO> getFilteredEvents(int page, int size, String city, String uf, Date startDate, Date endDate){
+        city = (city != null) ? city : "";
+        uf = (uf != null) ? uf : "";
+        startDate = (startDate != null) ? startDate : new Date(0);
+        endDate = (endDate != null) ? endDate : new Date();
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Event> eventsPage = this.repository.findFilteredEvents(city, uf, startDate, endDate, pageable);
+        return eventsPage.map(event -> new EventResponseDTO(
+                        event.getId(),
+                        event.getTitle(),
+                        event.getDescription(),
+                        event.getDate(),
+                        event.getAddress() != null ? event.getAddress().getCity() : "",
+                        event.getAddress() != null ? event.getAddress().getUf() : "",
                         event.getRemote(),
                         event.getEventUrl(),
                         event.getImgUrl())
