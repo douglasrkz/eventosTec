@@ -25,7 +25,6 @@ public class Coupon {
 
     private String code;
     private Integer discount;
-
     private Date valid;
 
     @ManyToOne
